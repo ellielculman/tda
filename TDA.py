@@ -18,6 +18,18 @@ import gudhi.wasserstein
 from PIL import Image
 import matplotlib.pyplot as plt
 
+def convert_gif_to_jpeg(gif_path, jpeg_path):
+    # Open the GIF image
+    gif_image = Image.open(gif_path)
+
+    # Convert the GIF to a single frame (first frame in this case)
+    gif_image.seek(0)
+    single_frame = gif_image.convert("L")
+
+    # Save as JPEG
+    single_frame.save(jpeg_path, "JPEG")
+
+
 # Function to transfer image to LBP domain
 def lbp8_image(img):
     n = np.size(img,0)
@@ -169,17 +181,8 @@ def get_pds(img, lbp_idx, max_dim):
     return feature_vectors
 
 # Function to compute featurized barcodes
-def get_pd_featurized_barcodes(imgPath):
-    print(imgPath)
-    
-    dim0_bin = [[[] for i in range(8)] for j in range(7)]
-    dim0_stats = [[[] for i in range(8)] for j in range(7)]
-    dim1_bin = [[[] for i in range(8)] for j in range(7)]
-    dim1_stats = [[[] for i in range(8)] for j in range(7)]
-    dim0_persims = [[[] for i in range(8)] for j in range(7)]
-    dim1_persims = [[[] for i in range(8)] for j in range(7)]
-    dim0_perland = [[[] for i in range(8)] for j in range(7)]
-    dim1_perland = [[[] for i in range(8)] for j in range(7)]
+'''
+def get_pd_featurized_barcodes(imgPath):    
 
     # Binning range
     binRange = np.arange(0, 30)
@@ -190,18 +193,15 @@ def get_pd_featurized_barcodes(imgPath):
     # Persistent Landscape
     persLand = representations.Landscape(resolution=100)
     
-    img = cv2.imread(imgPath,0)
+    convert_gif_to_jpeg(imgPath, os.path.splitext(imgPath)[0] + ".jpg")
+    imgPath_gif = os.path.splitext(imgPath)[0] + ".jpg"
+    img= cv2.imread(imgPath_gif,0)
 
-    for geo in range(7):
-        i_lbp = get_geomtetry_ulbp(geo)
+    i_lbp = get_geomtetry_ulbp(1) #this used to be done for geo in range(7)
         
         for rot in range(8):
             feature_vectors = get_pds(img, i_lbp[rot], 1)
-
-            fig, axs = plt.subplots(1, 3, figsize=(10,5))
-
-            axs[0].set_title("Original Diagram")
-            pimgr.plot_diagram(dim0[0], skew=False, ax=axs[0])
+            print(feature_vectors)
             
             if(np.size(feature_vectors) == 0):
                 continue
@@ -227,6 +227,7 @@ def get_pd_featurized_barcodes(imgPath):
             dim1_perland[geo][rot] = get_pers_lands(dim1, persLand)
     
     return [os.path.basename(imgPath), dim0_bin, dim0_stats, dim1_bin, dim1_stats, dim0_persims, dim1_persims, dim0_perland, dim1_perland]
+  '''  
 
 
 # Main thread to run the script
@@ -238,13 +239,33 @@ if __name__ == '__main__':
     for root, dirs, files in os.walk(root_directory):
         if root != root_directory:
             for filename in files:
-                image_path = os.path.join(root, filename)
-                result = get_pd_featurized_barcodes(image_path)
-                np.save(f'{outputFolder}//', result)
+                if "benign" in root:
+                    type = "benign"
+                if "cancer" in root:
+                    type = "cancer"
+                if "normal" in root:
+                    type = "normal"
+                name = filename[0:14]
+                if not os.path.isdir(f'{outputFolder}//{type}'):
+                    os.mkdir(f'{outputFolder}//{type}//')
+                if not os.path.isdir(f'{outputFolder}//{type}//{name}'):
+                    os.mkdir(f'{outputFolder}//{type}//{name}')
+                imgPath = os.path.join(root, filename)
+                convert_gif_to_jpeg(imgPath, os.path.splitext(imgPath)[0] + ".jpg")
+                imgPath_gif = os.path.splitext(imgPath)[0] + ".jpg"
+                img= cv2.imread(imgPath_gif,0)
+                i_lbp = get_geomtetry_ulbp(1) #this used to be done for geo in range(7)
+                barcode = get_pds(img, i_lbp[0], 1) #used to be called on every i_lbp inde
+                dim0 = barcode[0]
+                dim1 = barcode[1]
+                if not os.path.isdir(f'{outputFolder}//{type}//{name}'):
+                    os.mkdir(f'{outputFolder}//{type}//{name}')
+                np.save(f'{outputFolder}//{type}//{name}', dim0)
+                np.save(f'{outputFolder}//{type}//{name}', dim1)
+
 
 
     X = np.load("ExportedFeatures/DDSM_Mass_257images/CSV/G0/R0/dim0_bin.npy" )
-    print(X)
     Y = np.load("ExportedFeatures/DDSM_Mass_257images/CSV/G0/R1/dim0_bin.npy" )
     distanceXY = gudhi.wasserstein.wasserstein_distance(X, Y, matching=False, order=1.0, internal_p= 2.0, enable_autodiff=False, keep_essential_parts=True)
     print(distanceXY)
