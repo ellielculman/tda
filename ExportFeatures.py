@@ -113,17 +113,9 @@ def get_pds(lbp_features, max_dim):
 
 # Main thread to run the script
 if __name__ == '__main__':
-
-    img_path = "images/Volume: benign_02 Case: A-1266-1/A_1266_1.LEFT_MLO.LJPEG.1_highpass.jpg"
-    img = cv2.imread(img_path, 0)
-    lbp_features = lbp8_image(img)
-    max_dim = 1
-    persistence_diagrams = get_pds(lbp_features, max_dim)
-    X = np.load("persistence_diagram_dim1.npy")
+    X = np.load("ExportedFeatures/benign/D_4031_1.LEFT_/dim0.npy")
     print(X)
-
-
-'''
+    '''
     root_directory = '/Users/pertsemlidish22/desktop/tda/images'
     file_extension = '*.gif'
     file_pattern = os.path.join(root_directory, file_extension)
@@ -148,18 +140,21 @@ if __name__ == '__main__':
                 convert_gif_to_jpeg(imgPath, os.path.splitext(imgPath)[0] + ".jpg")
                 imgPath_gif = os.path.splitext(imgPath)[0] + ".jpg"
                 img= cv2.imread(imgPath_gif,0)
-                barcode = get_pds(img, 1) 
+                lbp_features = lbp8_image(img)
+                barcode = get_pds(lbp_features, 1) 
                 dim0 = barcode[0]
                 dim1 = barcode[1]
                 if not os.path.isdir(f'{outputFolder}//{type}//{name}'):
                     os.mkdir(f'{outputFolder}//{type}//{name}')
                 np.save(f'{outputFolder}//{type}//{name}//dim0', dim0)
                 np.save(f'{outputFolder}//{type}//{name}//dim1', dim1)
+                '''
+    
 
 
-
+'''
     X = np.load("ExportedFeatures/DDSM_Mass_257images/CSV/G0/R0/dim0_bin.npy" )
     Y = np.load("ExportedFeatures/DDSM_Mass_257images/CSV/G0/R1/dim0_bin.npy" )
     distanceXY = gudhi.wasserstein.wasserstein_distance(X, Y, matching=False, order=1.0, internal_p= 2.0, enable_autodiff=False, keep_essential_parts=True)
     print(distanceXY)
-    '''
+'''
