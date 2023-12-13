@@ -7,21 +7,52 @@ import scipy.stats
 
 def test_one(tester):
     
-    minVal = 1000000000000
-    minIndex = 0
-    indx = 0
+    minVal_benign = 1000000000000
+    minIndex_benign = 0
+    indx_benign = 0
+    minVal_cancer = 1000000000000
+    minIndex_cancer = 0
+    indx_cancer = 0
+    minVal_normal = 1000000000000
+    minIndex_normal = 0
+    indx_normal = 0
 
-    for val in train_data:
-        distanceXY = scipy.stats.wasserstein_distance(tester, val, u_weights=None, v_weights=None)    
-        if distanceXY < minVal:
-            minVal = distanceXY
-            minIndex = indx
-        indx += 1
-    #print(minVal)
-    #print(minIndex)
-    class_pred = train_labels[minIndex]
-    #print("class predicted: " + class_pred)
-    #print("true class: " + test_labels[310])
+    train_data_benign = []
+    train_data_cancer = []
+    train_data_normal = []
+    i = 0
+    for data in train_data:
+        if train_labels[i] == "benign":
+            train_data_benign.append(data)
+        if train_labels[i] == "cancer":
+            train_data_cancer.append(data)
+        if train_labels[i] == "normal":
+            train_data_normal.append(data)
+    for val_benign in train_data_benign :
+        distanceXY = scipy.stats.wasserstein_distance(tester, val_benign, u_weights=None, v_weights=None)    
+        if distanceXY < minVal_benign:
+            minVal_benign = distanceXY
+            minIndex_benign = indx_benign
+        indx_benign += 1
+    for val_cancer in train_data_cancer :
+        distanceXY = scipy.stats.wasserstein_distance(tester, val_cancer, u_weights=None, v_weights=None)    
+        if distanceXY < minVal_cancer:
+            minVal_cancer = distanceXY
+            minIndex_cancer = indx_cancer
+        indx_cancer += 1
+    for val_normal in train_data_normal :
+        distanceXY = scipy.stats.wasserstein_distance(tester, val_normal, u_weights=None, v_weights=None)    
+        if distanceXY < minVal_normal:
+            minVal_normal = distanceXY
+            minIndex_normal = indx_normal
+        indx_normal+= 1
+    total_min = min(minVal_benign, minVal_cancer, minVal_normal)
+    if total_min == minVal_benign: 
+        class_pred = "benign"
+    if total_min == minVal_cancer: 
+        class_pred = "cancer"
+    if total_min == minVal_normal: 
+        class_pred = "normal"
     return class_pred
 
 def test_mod():
@@ -29,6 +60,7 @@ def test_mod():
     classify_arr = []
     for test in test_data:
         classify_arr.append(test_one(test))
+        print(test_one(test))
 
     benign_list = [0, 0, 0]
     cancer_list = [0, 0, 0]
@@ -105,5 +137,5 @@ if __name__ == '__main__':
 
     #print("\nTesting set distribution:")
     #print(pd.Series(test_labels).value_counts(normalize=True))
-    
+    #test_one(test_data[43])
     test_mod()
