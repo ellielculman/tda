@@ -4,63 +4,31 @@ import numpy as np
 import os
 import gudhi.wasserstein
 import scipy.stats
+from sklearn.metrics import accuracy_score, precision_score, confusion_matrix
 
 def test_one(tester):
     
-    minVal_benign = 1000000000000
-    minIndex_benign = 0
-    indx_benign = 0
-    minVal_cancer = 1000000000000
-    minIndex_cancer = 0
-    indx_cancer = 0
-    minVal_normal = 1000000000000
-    minIndex_normal = 0
-    indx_normal = 0
+    minVal = 1000000000000
+    minIndex = 0
+    indx = 0
 
-    train_data_benign = []
-    train_data_cancer = []
-    train_data_normal = []
-    i = 0
-    for data in train_data:
-        if train_labels[i] == "benign":
-            train_data_benign.append(data)
-        if train_labels[i] == "cancer":
-            train_data_cancer.append(data)
-        if train_labels[i] == "normal":
-            train_data_normal.append(data)
-    for val_benign in train_data_benign :
-        distanceXY = scipy.stats.wasserstein_distance(tester, val_benign, u_weights=None, v_weights=None)    
-        if distanceXY < minVal_benign:
-            minVal_benign = distanceXY
-            minIndex_benign = indx_benign
-        indx_benign += 1
-    for val_cancer in train_data_cancer :
-        distanceXY = scipy.stats.wasserstein_distance(tester, val_cancer, u_weights=None, v_weights=None)    
-        if distanceXY < minVal_cancer:
-            minVal_cancer = distanceXY
-            minIndex_cancer = indx_cancer
-        indx_cancer += 1
-    for val_normal in train_data_normal :
-        distanceXY = scipy.stats.wasserstein_distance(tester, val_normal, u_weights=None, v_weights=None)    
-        if distanceXY < minVal_normal:
-            minVal_normal = distanceXY
-            minIndex_normal = indx_normal
-        indx_normal+= 1
-    total_min = min(minVal_benign, minVal_cancer, minVal_normal)
-    if total_min == minVal_benign: 
-        class_pred = "benign"
-    if total_min == minVal_cancer: 
-        class_pred = "cancer"
-    if total_min == minVal_normal: 
-        class_pred = "normal"
+
+    for val in train_data:
+        distanceXY = scipy.stats.wasserstein_distance(tester, val, u_weights=None, v_weights=None)    
+        if distanceXY < minVal:
+            minVal = distanceXY
+            minIndex = indx
+        indx += 1
+    #print(minVal)
+    #print(minIndex)
+    class_pred = train_labels[minIndex]
+    #print("class predicted: " + class_pred)
+    #print("true class: " + test_labels[310])
     return class_pred
 
 def test_mod():
 
-    classify_arr = []
-    for test in test_data:
-        classify_arr.append(test_one(test))
-        print(test_one(test))
+    
 
     benign_list = [0, 0, 0]
     cancer_list = [0, 0, 0]
@@ -97,6 +65,9 @@ if __name__ == '__main__':
     np.random.seed(2)  # Setting seed for reproducibility
     data_list = []
     label_list = []
+    
+    
+    
 
     # Traverse subdirectories
     min_size = 100000000000000000000000
@@ -131,11 +102,50 @@ if __name__ == '__main__':
     train_data, test_data, train_labels, test_labels = train_test_split(
         data_array, label_array, test_size=0.25, random_state=2, stratify=label_array
     ) 
+
+    classify_arr = []
+    for test in test_data:
+        classify_arr.append(test_one(test))
+        
     # Display class distribution in the training and testing sets
     #print("Training set distribution:")
     #print(pd.Series(train_labels).value_counts(normalize=True))
 
     #print("\nTesting set distribution:")
     #print(pd.Series(test_labels).value_counts(normalize=True))
-    #test_one(test_data[43])
-    test_mod()
+    
+    #test_mod()
+
+    y_test = test_labels  # Replace with your actual labels
+    y_pred = classify_arr  # Replace with your model's predictions
+
+    # Assuming you have class labels
+    classes = ["benign", "cancer", "normal"]
+
+    # Encode class labels
+    class_encoding = {class_label: i for i, class_label in enumerate(classes)}
+
+    # Convert labels to numeric values
+    y_test_numeric = [class_encoding[label] for label in y_test]
+    y_pred_numeric = [class_encoding[label] for label in y_pred]
+
+    # Calculate accuracy
+    accuracy = accuracy_score(y_test_numeric, y_pred_numeric)
+
+    # Calculate precision for each class
+    precision_per_class = precision_score(y_test_numeric, y_pred_numeric, average=None)
+
+    # Calculate overall precision (macro-average)
+    overall_precision = precision_score(y_test_numeric, y_pred_numeric, average='macro')
+
+    # Create confusion matrix
+    conf_matrix = confusion_matrix(y_test_numeric, y_pred_numeric)
+
+    print("Accuracy:", accuracy)
+    print("Precision per class:", precision_per_class)
+    print("Overall Precision (Macro-average):", overall_precision)
+    print("Confusion Matrix:")
+    print(conf_matrix)
+
+
+
