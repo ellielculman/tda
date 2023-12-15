@@ -17,8 +17,8 @@ print(accuracy)
 from sklearn.metrics import accuracy_score, precision_score, confusion_matrix
 
 # Assuming you have test_labels (y_test) and predicted_labels (y_pred)
-y_test = Model.test_labels  # Replace with your actual labels
-y_pred = Model.classify_arr  # Replace with your model's predictions
+y_test = test_labels  # Replace with your actual labels
+y_pred = Mclassify_arr  # Replace with your model's predictions
 
 # Assuming you have class labels
 classes = ["benign", "cancer", "normal"]

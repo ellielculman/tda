@@ -111,10 +111,21 @@ def get_pds(lbp_features, max_dim):
     
     return feature_vectors
 
+def numbers(feature_vectors) :
+    print(len(feature_vectors[0]))
+    print(len(feature_vectors[1]))
+
 # Main thread to run the script
 if __name__ == '__main__':
-    X = np.load("ExportedFeatures/benign/D_4031_1.LEFT_/dim0.npy")
-    print(X)
+    max_dim = 1
+    imgPath = "images/Volume: benign_03 Case: A-1367-1/A_1367_1.RIGHT_MLO.LJPEG.1_highpass.gif"
+    convert_gif_to_jpeg(imgPath, os.path.splitext(imgPath)[0] + ".jpg")
+    imgPath_gif = os.path.splitext(imgPath)[0] + ".jpg"
+    img= cv2.imread(imgPath_gif,0) 
+    lbp_features = lbp8_image(img)
+    barcode = get_pds(lbp_features, max_dim) 
+    numbers(barcode)
+    
     '''
     root_directory = '/Users/pertsemlidish22/desktop/tda/images'
     file_extension = '*.gif'
